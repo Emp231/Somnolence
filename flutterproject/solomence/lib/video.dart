@@ -115,6 +115,7 @@ class _VideoState extends State<Video> {
   }
 
   loadmodel() async {
+    print("Loads Model");
     await Tflite.loadModel(model: "assets/model.tflite", labels: "assets/labels.txt");
   }
 
