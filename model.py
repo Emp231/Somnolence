@@ -24,7 +24,7 @@ while cap.isOpened():
 
             cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
 
-    cv2.imshow("Detection", frame)
+    cv2.imshow("Somnolence", frame)
     print(prediction)
 
     if cv2.waitKey(1) == ord('q'):
