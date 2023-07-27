@@ -2,7 +2,7 @@ import 'package:Somnolence/components/my_button.dart';
 import 'package:Somnolence/homepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:Somnolence/loginpage.dart';
 import 'package:Somnolence/components/my_textfield.dart';
 import 'my_textfield.dart';
 
@@ -145,7 +145,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(width: 4),
                   GestureDetector(
-                    onTap: widget.onTap,
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return LoginPage(
+                          onTap: widget.onTap,
+                        );
+                      }));
+                    },
                     child: const Text(
                       'Login Here',
                       style: TextStyle(

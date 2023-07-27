@@ -1,7 +1,7 @@
 import 'package:Somnolence/components/register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:Somnolence/loginpage.dart';
 import 'components/my_textfield.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -109,8 +109,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () {
-                      // Navigation.push(context, MaterialPageRoute(builder: (context) => RegisterPage(onTap: widget.onTap)));
-                    },
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return RegisterPage(
+                          onTap: widget.onTap,
+                        );
+                      }));
+                    }, 
                     child: const Text(
                       'Register now',
                       style: TextStyle(
@@ -133,7 +137,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                   const SizedBox(width: 4),
                   GestureDetector(
-                    onTap: widget.onTap,
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return LoginPage(
+                          onTap: widget.onTap,
+                        );
+                      }));
+                    },  
                     child: const Text(
                       'Login Here',
                       style: TextStyle(

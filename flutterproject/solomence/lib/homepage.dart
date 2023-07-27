@@ -36,12 +36,8 @@ class HomePage extends StatelessWidget {
                 SquareTile(
                   title: 'How to use:',
                   text: 'Below are many buttons to help make your drive more safe. First is the \'Start Driving\' button where when pressing it starts your camera and records when you feel sleepy. Then is the \'Alarm Noise\', which sets your alarm to wake you up if you fall asleep. After that we have our calender. It is used to record when you felt sleepy. Lastly we have a \'Logout\' button which logs you out of the app ',
-                  
                 
                 ),
-                const SizedBox(height: 30,),
-
-                SquareTile(title:'How to use:', text:'Below are many buttons to help make your drive more safe. First is the \'Start Driving\' button where when pressing it starts your camera and records when you feel sleepy. Then is the \'Alarm Noise\', which sets your alarm to wake you up if you fall asleep. After that we have our calender. It is used to record when you felt sleepy. Lastly we have a \'Logout\' button which logs you out of the app '),
 
                 ElevatedButton(
                 onPressed: () {
@@ -88,21 +84,8 @@ class HomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20,),
                 ElevatedButton(
-                  onPressed: () {
-                  },
-                  style: ElevatedButton.styleFrom(
-                      fixedSize: Size(240, 80),
-                      backgroundColor: Colors.pink,
-                  ),
-                  child: Text("Add To Log",
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),),
-                ),
-                const SizedBox(height: 20,),
-                ElevatedButton(
                   onPressed: signUserOut, 
-                  style: ElevatedButton.styleFrom(
+                style: ElevatedButton.styleFrom(  
                     fixedSize: Size(240, 80),
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white
