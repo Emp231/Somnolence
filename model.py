@@ -39,6 +39,10 @@ while cap.isOpened():
             eyes_r = ROI_G[ey: ey + eh, ex:ex+ew]
             AR = eye_AR(eyes_r)
 
+            if detect_pupil(eyes_r):
+                cv2.putText(frame, "Closed", (x + ex, y + ey - 10), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+            else:
+                cv2.putText(frame, "Open", (x + ex, y + ey - 10), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
 
             cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
 
