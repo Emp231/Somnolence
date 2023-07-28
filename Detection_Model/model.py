@@ -9,14 +9,11 @@ def perform_classification(frame):
 
     for (x, y, w, h) in faces:
             prediction = "Closed"
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 5)
             ROI_G = gray[y:y+w, x:x+w]
             ROI_C = frame[y:y+h, x:x+w]
             eye = eye_cascade.detectMultiScale(ROI_G, 1.3, 5)
             for (ex, ey, ew, eh) in eye:
                 prediction = "Open"
-                eyes_r = ROI_G[ey: ey + eh, ex:ex+ew]
 
-                cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
 
     return prediction
