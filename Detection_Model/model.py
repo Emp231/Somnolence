@@ -1,17 +1,4 @@
 import cv2
-from flask import Flask, request, jsonify
-import werkzeug
-import base64
-
-app = Flask(__name__)
-@app.route("/detect", methods=["POST"])
-def detect():
-    pass
-
-
-if __name__ == "__main__":
-    app.run()
-
 
 def perform_classification(frame):
     prediction = None
