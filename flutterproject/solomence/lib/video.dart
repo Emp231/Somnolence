@@ -4,6 +4,7 @@ import 'package:tflite/tflite.dart';
 import 'package:camera_web/camera_web.dart';
 import 'main.dart';
 import 'dart:io' show Platform;
+import 'package:Somnolence/api.dart';
 
 class Video extends StatefulWidget {
   const Video({super.key});
