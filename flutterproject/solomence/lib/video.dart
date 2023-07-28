@@ -82,6 +82,7 @@ class _VideoState extends State<Video> {
 
   runModel()async{
     if(cameraImage != null) {
+      sendImageToServer(cameraImage!);
       var predictions = await Tflite.runModelOnFrame(
         bytesList: cameraImage!.planes.map((plane) {
           return plane.bytes;

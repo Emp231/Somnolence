@@ -9,7 +9,7 @@ Future<void> sendImageToServer(CameraImage image) async {
   
   String base64Image = convertCameraImageToBase64(image);
   
-  var url = Uri.parse(); // Add Url Here
+  var url = null; // Add Url Here
   var response = await http.post(
     url, 
     body: {"image": base64Image}, 

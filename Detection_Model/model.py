@@ -33,4 +33,4 @@ def perform_classification(frame):
     return prediction
 
 if __name__ == "__main__":
-     app.run() # Add post here idk 
+     app.run(port=5000)
