@@ -6,9 +6,13 @@ app = Flask(__name__)
 @app.route("/classify", methods=["POST"])
 
 def classify():
-    img = request.form["image"]
-    result = perform_classification(img)
-    return jsonify({"Result": result})
+    if request.method == "POST":
+            
+        img = request.form["image"]
+        result = perform_classification(img)
+        return jsonify({"Result": result})
+    else:
+         return jsonify({"Error": "Invalid Request method"}), 405
 
 def perform_classification(frame):
     prediction = None
