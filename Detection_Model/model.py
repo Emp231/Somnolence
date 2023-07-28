@@ -1,4 +1,14 @@
 import cv2
+from flask import Flask, request, jsonify
+import base64
+
+app = Flask(__name__)
+@app.route("/classify", methods=["POST"])
+
+def classify():
+    img = request.form["image"]
+    result = perform_classification(img)
+    return jsonify({"Result": result})
 
 def perform_classification(frame):
     prediction = None
@@ -17,3 +27,6 @@ def perform_classification(frame):
 
 
     return prediction
+
+if __name__ == "__main__":
+     app.run() # Add post here idk 
