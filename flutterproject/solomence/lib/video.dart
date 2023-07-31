@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:tflite/tflite.dart';
 import 'package:camera_web/camera_web.dart';
 import 'main.dart';
 import 'dart:io' show Platform;
@@ -72,7 +71,6 @@ class _VideoState extends State<Video> {
   @override
   void dispose() {
     cameraController?.dispose();
-    Tflite.close();
     super.dispose();
   }
 
