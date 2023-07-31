@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 Future<void> sendImageToServer(CameraImage image) async {
-  
+  print("Server");
   String base64Image = convertCameraImageToBase64(image);
   
   var url = null; // Add Url Here
