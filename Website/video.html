@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Access</title>
+    <style>
+        body {
+          margin: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+        }
+        #video-container {
+          position: absolute; /* Use absolute positioning */
+          top: 30px; /* Adjust this value to move the container closer to the top */
+          left: 50%; /* Center the container horizontally */
+          transform: translateX(-50%); /* Center the container horizontally */
+          width: 85%;
+          height: 84%;
+          overflow: hidden;
+        }
+        #video-element {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="video-element" autoplay playsinline></video>
+    </div>
+    
+    <script>
+      // Get video element and container
+      const videoElement = document.getElementById('video-element');
+      const videoContainer = document.getElementById('video-container');
+  
+      // Access the user's camera stream
+      async function startCamera() {
+          try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              videoElement.srcObject = stream;
+          } catch (err) {
+              console.error('Error accessing the camera: ', err);
+          }
+      }
+  
+      // Resize the video element based on the window size
+      function resizeVideo() {
+          const windowWidth = window.innerWidth;
+          const windowHeight = window.innerHeight;
+  
+          const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+          const windowAspectRatio = windowWidth / windowHeight;
+  
+          if (windowAspectRatio > videoAspectRatio) {
+              // Resize based on width
+              videoElement.style.width = windowWidth + 'px';
+              videoElement.style.height = (windowWidth / videoAspectRatio) + 'px';
+          } else {
+              // Resize based on height
+              videoElement.style.width = (windowHeight * videoAspectRatio) + 'px';
+              videoElement.style.height = windowHeight + 'px';
+          }
+      }
+  
+      // Event listener for window resize
+      window.addEventListener('resize', resizeVideo);
+      
+      function captureFrame() {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElement,0,0,canvas.width,canvas.height);
+        const frameData = canvas.toDataURL('image/jpeg');
+
+        console.log(frameData);
+      }
+      // Start the camera stream and adjust video size initially
+      startCamera();
+      resizeVideo();
+  </script>
+</body>
+</html>

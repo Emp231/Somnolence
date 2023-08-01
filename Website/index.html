@@ -1,64 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Camera</title>
-  <link rel = "stylesheet" href = "styles.css";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
 <body>
-  <div class = "container">
-    <div class = "video-container">
-      <video id = "videoElement" width = "100%" height = "40%" autoplay></video>
-      <canvas id = "canvasElement" style ="display: none;"></canvas>
+    <div id="video-container">
+        <video id="video-element" autoplay playsinline></video>
     </div>
-    <div class = "rightdiv">
-      <button>Noises</button>
-    </div>
-  </div>
-  <script>
-    function handleStream(stream) {
-      const videoElement = document.getElementById('videoElement');
-      videoElement.srcObject = stream;
 
-
-      const canvasElement = document.getElementById('canvasElement');
-      const canvasContext = canvasElement.getContext('2d');
-
-      function processVideoFrame() {
-        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        // Here, you can send the imageData to your Python backend for processing or do other manipulations.
-        // For example, you can send it via WebSocket or as a base64-encoded string in an HTTP request.
-        
-        // Call the processVideoFrame function repeatedly to process each frame
-        requestAnimationFrame(processVideoFrame);
-      }
-
-      // Start processing the video frames
-      requestAnimationFrame(processVideoFrame);
-    }
-
-    function handleError(error) {
-      console.error('Error accessing the camera:', error);
-    }
-
-    async function accessCamera() {
-      try {
-        const constraints = {video : true};
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        handleStream(stream);
-      }
-      catch (error) {
-        handleError(error);
-      }
-    }
-
-    window.onload = function() {
-      accessCamera();
-    };
-  </script>
-
-
+    <!-- Link to the home page -->
+    <p><a href="video.html">Home Page</a></p>
 </body>
 </html>
