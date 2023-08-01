@@ -1,28 +1,21 @@
 import cv2
 from flask import Flask, request, jsonify
 import base64
+import numpy as np
 
 app = Flask(__name__)
 
-
 @app.route("/", methods=["GET"])
-def index():
-    return "Welcome to the classification server!"
-
-@app.route("/favicon.ico", methods=["GET"])
-def favicon():
-    # You can just return an empty response or any desired content.
-    return "", 200
-
-
-@app.route("/classify", methods=["POST"])
 def classify():
     try:
-        frame_data = request.json["frame_data"]
-        result = perform_classification(frame_data)
-        return jsonify(result)
+        frame_data = request.args.get("frame_data")
+        decoded_frame = base64.b64decode(frame_data.split(',')[1])
+        frame_array = np.frombuffer(decoded_frame, dtype=np.uint8)
+        frame = cv2.imdecode(frame_array, cv2.IMREAD_COLOR)
+        result = perform_classification(frame)
+        return jsonify({"prediction": result})
     except Exception as e:
-         return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)})
 
 
 def perform_classification(frame):
