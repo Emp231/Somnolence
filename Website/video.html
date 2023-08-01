@@ -67,7 +67,17 @@
   
       // Event listener for window resize
       window.addEventListener('resize', resizeVideo);
-  
+      
+      function captureFrame() {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElement,0,0,canvas.width,canvas.height);
+        const frameData = canvas.toDataURL('image/jpeg');
+
+        console.log(frameData);
+      }
       // Start the camera stream and adjust video size initially
       startCamera();
       resizeVideo();
