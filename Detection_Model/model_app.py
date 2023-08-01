@@ -24,10 +24,16 @@ while cap.isOpened():
 
 
             cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    font_color = (0, 0, 255)
+    font_thickness = 2
+    cv2.putText(frame, f"Prediction: {preditcion}", (10, 30), font, font_scale, font_color, font_thickness)
+
 
     cv2.imshow("Somnolence", frame)
-    print(preditcion)
-
+    
     if cv2.waitKey(1) == ord('q'):
         break
 
