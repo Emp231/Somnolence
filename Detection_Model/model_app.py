@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 import time
 
 preditcion = None
@@ -15,7 +14,7 @@ while cap.isOpened():
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-
+    preditcion = None
     for (x, y, w, h) in faces:
         preditcion = "Closed"
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 5)
@@ -35,7 +34,7 @@ while cap.isOpened():
     font_thickness = 2
 
     mirrored = cv2.flip(frame, 1)
-
+    print(preditcion)
     if preditcion == "Closed" and time.time() - last_prediction_time >= time_threshold:
         cv2.putText(mirrored, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
     else:
