@@ -1,5 +1,12 @@
 import cv2
 import time
+import pygame
+
+pygame.init()
+pygame.mixer.init()
+sound_file = "Detection_Model/sounds/alarm.wav"
+pygame.mixer.music.load(sound_file)
+
 
 preditcion = None
 cap = cv2.VideoCapture(0)
@@ -37,6 +44,7 @@ while cap.isOpened():
     print(preditcion)
     if preditcion == "Closed" and time.time() - last_prediction_time >= time_threshold:
         cv2.putText(mirrored, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
+        pygame.mixer.music.play()
     else:
         cv2.putText(mirrored, f"Prediction: Not Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
 
