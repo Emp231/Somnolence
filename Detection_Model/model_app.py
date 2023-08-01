@@ -34,14 +34,15 @@ while cap.isOpened():
     font_color = (0, 0, 255)
     font_thickness = 2
 
-
+    mirrored = cv2.flip(frame, 1)
 
     if preditcion == "Closed" and time.time() - last_prediction_time >= time_threshold:
-        cv2.putText(frame, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
+        cv2.putText(mirrored, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
     else:
-        cv2.putText(frame, f"Prediction: Not Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
+        cv2.putText(mirrored, f"Prediction: Not Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
 
-    cv2.imshow("Somnolence", frame)
+    
+    cv2.imshow("Somnolence", mirrored)
 
     if cv2.waitKey(1) == ord('q'):
         break
