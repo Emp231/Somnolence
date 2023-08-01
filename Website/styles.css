@@ -11,7 +11,7 @@ h1 {
 /* Default dimensions for the video (on larger screens) */
 #videoElement {
   height: 80vh;
-  width: fit-content;
+  width: 100vw;
   align-items: left;
   display: inline-block;
 }
