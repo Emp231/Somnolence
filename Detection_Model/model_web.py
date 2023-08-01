@@ -3,8 +3,19 @@ from flask import Flask, request, jsonify
 import base64
 
 app = Flask(__name__)
-@app.route("/classify", methods=["POST"])
 
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Welcome to the classification server!"
+
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    # You can just return an empty response or any desired content.
+    return "", 200
+
+
+@app.route("/classify", methods=["POST"])
 def classify():
     try:
         frame_data = request.json["frame_data"]
