@@ -1,12 +1,16 @@
 import cv2
 import numpy as np
+import time
 
 preditcion = None
 cap = cv2.VideoCapture(0)
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
-while cap.isOpened():
+last_prediction_time = time.time()
+time_threshold = 3
+
+while cap.isOpened():    
     ret, frame = cap.read()
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -24,9 +28,21 @@ while cap.isOpened():
 
 
             cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    font_color = (0, 0, 255)
+    font_thickness = 2
 
-    cv2.imshow("Somnolence", frame)
-    print(preditcion)
+    mirrored = cv2.flip(frame, 1)
+
+    if preditcion == "Closed" and time.time() - last_prediction_time >= time_threshold:
+        cv2.putText(mirrored, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
+    else:
+        cv2.putText(mirrored, f"Prediction: Not Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
+
+    
+    cv2.imshow("Somnolence", mirrored)
 
     if cv2.waitKey(1) == ord('q'):
         break
