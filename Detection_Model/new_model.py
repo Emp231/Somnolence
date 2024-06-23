@@ -10,69 +10,73 @@ import time
 from tensorflow.keras.models import load_model
 import numpy as np
 
-"""
-images_path = "" # Path to train data
-img_labels = ["Closed", "Open"]
+accuracy = 0
+for _ in range(5):
+    images_path = "C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/train"
+    img_labels = ["Closed", "Open"]
 
-def get_data(input_string):
-    data = []
-    path = os.path.join(images_path, input_string)
-    label = img_labels.index(input_string)
+    def get_data(input_string):
+        data = []
+        path = os.path.join(images_path, input_string)
+        label = img_labels.index(input_string)
 
-    for img in os.listdir(path):
-        try:
-            img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_COLOR)
-            resized = cv2.resize(img_array, (145, 145))
-            data.append([resized, label])
-        except Exception as e:
-            print(f"Error reading image {img}: {str(e)}")
+        for img in os.listdir(path):
+            try:
+                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_COLOR)
+                resized = cv2.resize(img_array, (145, 145))
+                data.append([resized, label])
+            except Exception as e:
+                print(f"Error reading image {img}: {str(e)}")
 
-    return data
+        return data
 
 
-X_closed = get_data("Closed")
-X_open = get_data("Open")
+    X_closed = get_data("Closed")
+    X_open = get_data("Open")
 
-X = np.array([x[0] for x in X_closed + X_open])
-y = np.array([x[1] for x in X_closed + X_open])
+    X = np.array([x[0] for x in X_closed + X_open])
+    y = np.array([x[1] for x in X_closed + X_open])
 
-seed = 42
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=seed)
+    seed = 42
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=seed)
 
-X_train = X_train / 255.0
-X_test = X_test / 255.0
+    X_train = X_train / 255.0
+    X_test = X_test / 255.0
 
-model = Sequential([
-    Conv2D(256, (3, 3), activation='relu', input_shape=(145, 145, 3)),
-    MaxPooling2D(2, 2),
+    model = Sequential([
+        Conv2D(256, (3, 3), activation='relu', input_shape=(145, 145, 3)),
+        MaxPooling2D(2, 2),
 
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
+        Conv2D(128, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
 
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
 
-    Conv2D(32, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
+        Conv2D(32, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
 
-    Flatten(),
-    Dropout(0.5),
+        Flatten(),
+        Dropout(0.5),
 
-    Dense(64, activation='relu'),
-    Dense(2, activation='softmax')
-])
+        Dense(64, activation='relu'),
+        Dense(2, activation='softmax')
+    ])
 
-model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
 
-model.summary()
+    model.summary()
 
-history = model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test))
+    history = model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test))
 
-test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
-print(f"Test Accuracy: {test_acc}")
-model.save('C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5')
+    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
+    print(f"Test Accuracy: {test_acc}")
+
+    if test_acc > accuracy:
+        model.save('C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5')
+
 """
 
 model = load_model("drowsinessmodel.h5")
@@ -117,6 +121,6 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
-
+"""
 
 
