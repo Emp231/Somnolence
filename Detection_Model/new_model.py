@@ -3,13 +3,14 @@ import os
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
-from tensorflow.keras.models import Sequential
+#from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
+#from tensorflow.keras.models import Sequential
 import pygame
 import time
-from tensorflow.keras.models import load_model
+#from tensorflow.keras.models import load_model
 import numpy as np
 
+"""
 accuracy = 0
 for _ in range(5):
     images_path = "C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/train"
@@ -79,10 +80,13 @@ for _ in range(5):
 
 """
 
-model = load_model("drowsinessmodel.h5")
+model = tf.keras.models.load_model("C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5")
 
+left_pred = 0 # 0 for Closed, 1 for Open
+right_pred = 0
 cap = cv2.VideoCapture(0)
-eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+eye_cascade_left = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_lefteye_2splits.xml")
+eye_cascade_right = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_righteye_2splits.xml")
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -90,9 +94,10 @@ while cap.isOpened():
         break
 
     gray_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    eyes = eye_cascade.detectMultiScale(gray_scale, 1.3, 5)
+    left_eye = eye_cascade_left.detectMultiScale(gray_scale, 1.3, 5)
+    right_eye = eye_cascade_right.detectMultiScale(gray_scale, 1.3, 5)
 
-    for (x, y, w, h) in eyes:
+    for (x, y, w, h) in left_eye:
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         roi = gray_scale[y:y + h, x:x + w]
@@ -109,9 +114,35 @@ while cap.isOpened():
         pred_open = prediction[0][1]
 
         if pred_closed > pred_open:
-            print("closed")
+            left_pred = 0
         else:
-            print("open")
+            left_pred = 1
+
+    for (x, y, w, h) in right_eye:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        roi = gray_scale[y:y + h, x:x + w]
+
+        roi = cv2.resize(roi, (145, 145))
+        roi_rgb = cv2.cvtColor(roi, cv2.COLOR_GRAY2RGB)
+
+        input_data = roi_rgb.astype('float32') / 255.0
+        input_data = np.expand_dims(input_data, axis=0)
+
+        prediction = model.predict(input_data)
+
+        pred_closed = prediction[0][0]
+        pred_open = prediction[0][1]
+
+        if pred_closed > pred_open:
+            right_pred = 0
+        else:
+            right_pred = 1
+
+    if right_pred == 0 and left_pred == 0:
+        print("Closed")
+    elif right_pred == 1 and left_pred == 1:
+        print("Open")
 
     mirrored_frame = cv2.flip(frame, 1)
     cv2.imshow("Drowsiness Detection", mirrored_frame)
@@ -121,6 +152,5 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
-"""
 
 
