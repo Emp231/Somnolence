@@ -141,7 +141,7 @@ while cap.isOpened():
 
     if right_pred == 0 and left_pred == 0:
         print("Closed")
-    elif right_pred == 1 and left_pred == 1:
+    else:
         print("Open")
 
     mirrored_frame = cv2.flip(frame, 1)
