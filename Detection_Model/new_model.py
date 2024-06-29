@@ -81,7 +81,14 @@ for _ in range(5):
 """
 
 model = tf.keras.models.load_model("C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5")
+pygame.init()
+pygame.mixer.init()
+sound_files = "Detection_Model/sounds/alarm.wav"
+pygame.mixer.music.load(sound_files)
 
+drowsy_time = 0
+
+have_not_woken_up = True
 left_pred = 0 # 0 for Closed, 1 for Open
 right_pred = 0
 cap = cv2.VideoCapture(0)
@@ -89,9 +96,7 @@ eye_cascade_left = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_le
 eye_cascade_right = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_righteye_2splits.xml")
 
 while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+    _, frame = cap.read()
 
     gray_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     left_eye = eye_cascade_left.detectMultiScale(gray_scale, 1.3, 5)
@@ -141,7 +146,16 @@ while cap.isOpened():
 
     if right_pred == 0 and left_pred == 0:
         print("Closed")
+        drowsy_time += 1
+
+        if drowsy_time >= 30 and have_not_woken_up == False:
+            have_not_woken_up = True
+            pygame.mixer.music.play()
+            print("please wake up")
     else:
+        drowsy_time = 0
+        have_not_woken_up = False
+        pygame.mixer.music.stop()
         print("Open")
 
     mirrored_frame = cv2.flip(frame, 1)
