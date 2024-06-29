@@ -148,7 +148,7 @@ while cap.isOpened():
         print("Closed")
         drowsy_time += 1
 
-        if drowsy_time >= 30 and have_not_woken_up == False:
+        if drowsy_time >= 90 and have_not_woken_up == False:
             have_not_woken_up = True
             pygame.mixer.music.play()
             print("please wake up")
