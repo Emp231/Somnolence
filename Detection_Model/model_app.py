@@ -1,59 +1,101 @@
 import cv2
+import mediapipe as mp
 import time
 import pygame
+import math
 
 pygame.init()
 pygame.mixer.init()
-sound_file = "Detection_Model/sounds/alarm.wav"
+sound_file = "C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/sounds/alarm.mp3"
 pygame.mixer.music.load(sound_file)
 
-
-preditcion = None
 cap = cv2.VideoCapture(0)
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+threshold = 3
+last_drowsy_detect = None
+ear_threshold = 0.2
 
-last_prediction_time = time.time()
-time_threshold = 3
+mp_face_mesh = mp.solutions.face_mesh
+mp_drawing = mp.solutions.drawing_utils
 
-while cap.isOpened():    
-    ret, frame = cap.read()
+#define useful landmarks out of the 468 given my model
+left_landmarks = [33, 160, 158, 133, 153, 144]
+right_landmarks = [362, 387, 385, 263, 380, 373]
+def EAR(eye_landmarks):
+    p1 = eye_landmarks[0]
+    p2 = eye_landmarks[1]
+    p3 = eye_landmarks[2]
+    p4 = eye_landmarks[3]
+    p5 = eye_landmarks[4]
+    p6 = eye_landmarks[5]
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    preditcion = None
-    for (x, y, w, h) in faces:
-        preditcion = "Closed"
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 5)
-        ROI_G = gray[y:y+w, x:x+w]
-        ROI_C = frame[y:y+h, x:x+w]
-        eye = eye_cascade.detectMultiScale(ROI_G, 1.3, 5)
-        for (ex, ey, ew, eh) in eye:
-            preditcion = "Open"
-            eyes_r = ROI_G[ey: ey + eh, ex:ex+ew]
+    height1 = math.hypot(p2[0] - p6[0], p2[1] - p6[1])
+    height2 = math.hypot(p3[0] - p5[0], p3[1] - p5[1])
+    horizontal = math.hypot(p1[0] - p4[0], p1[1] - p4[1])
+    ratio = (height1 + height2) / (2.0 * horizontal)
+    return ratio
+
+#define face_mesh
+with mp_face_mesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+) as face_mesh:
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        h, w, _ = frame.shape
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(rgb)
+
+        prediction = "No Face"
+
+        if results.multi_face_landmarks:
+            face_landmarks = results.multi_face_landmarks[0]
+
+            # Extract eye coordinates
+            left_eye = [(int(face_landmarks.landmark[i].x * w), int(face_landmarks.landmark[i].y * h)) for i in left_landmarks]
+            right_eye = [(int(face_landmarks.landmark[i].x * w), int(face_landmarks.landmark[i].y * h)) for i in right_landmarks]
+
+            # Draw landmarks
+            for (x, y) in left_eye + right_eye:
+                cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
+
+            left_ear = EAR(left_eye)
+            right_ear = EAR(right_eye)
+            ear = (left_ear + right_ear) / 2.0
+
+            # Determine if eyes closed
+            if ear < ear_threshold:
+                prediction = "Closed"
+                if last_closed_time is None:
+                    last_closed_time = time.time()
+                elif time.time() - last_closed_time >= threshold:
+                    cv2.putText(frame, "DROWSY!", (10, 40),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                    if not pygame.mixer.music.get_busy():
+                        pygame.mixer.music.play()
+            else:
+                prediction = "Open"
+                last_closed_time = None
+                pygame.mixer.music.stop()
+
+        else:
+            last_closed_time = None
+            pygame.mixer.music.stop()
+
+        # Display prediction
+        cv2.putText(frame, f"Prediction: {prediction}", (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+
+        cv2.imshow("Drowsiness Detection", cv2.flip(frame, 1))
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 
-            cv2.rectangle(ROI_C, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 5)
-    
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    font_color = (0, 0, 255)
-    font_thickness = 2
-
-    mirrored = cv2.flip(frame, 1)
-    print(preditcion)
-    if preditcion == "Closed" and time.time() - last_prediction_time >= time_threshold:
-        cv2.putText(mirrored, f"Prediction: Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
-        pygame.mixer.music.play()
-    else:
-        cv2.putText(mirrored, f"Prediction: Not Drowsy", (10, 30), font, font_scale, font_color, font_thickness)
-
-    
-    cv2.imshow("Somnolence", mirrored)
-
-    if cv2.waitKey(1) == ord('q'):
-        break
-
-
-cap.release()
-cv2.destroyAllWindows()

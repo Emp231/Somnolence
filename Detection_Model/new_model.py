@@ -1,168 +1,100 @@
 import cv2
-import os
-import numpy as np
-from sklearn.model_selection import train_test_split
-import tensorflow as tf
-#from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
-#from tensorflow.keras.models import Sequential
-import pygame
+import mediapipe as mp
 import time
-#from tensorflow.keras.models import load_model
-import numpy as np
+import pygame
+import math
 
-"""
-accuracy = 0
-for _ in range(5):
-    images_path = "C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/train"
-    img_labels = ["Closed", "Open"]
-
-    def get_data(input_string):
-        data = []
-        path = os.path.join(images_path, input_string)
-        label = img_labels.index(input_string)
-
-        for img in os.listdir(path):
-            try:
-                img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_COLOR)
-                resized = cv2.resize(img_array, (145, 145))
-                data.append([resized, label])
-            except Exception as e:
-                print(f"Error reading image {img}: {str(e)}")
-
-        return data
-
-
-    X_closed = get_data("Closed")
-    X_open = get_data("Open")
-
-    X = np.array([x[0] for x in X_closed + X_open])
-    y = np.array([x[1] for x in X_closed + X_open])
-
-    seed = 42
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=seed)
-
-    X_train = X_train / 255.0
-    X_test = X_test / 255.0
-
-    model = Sequential([
-        Conv2D(256, (3, 3), activation='relu', input_shape=(145, 145, 3)),
-        MaxPooling2D(2, 2),
-
-        Conv2D(128, (3, 3), activation='relu'),
-        MaxPooling2D(2, 2),
-
-        Conv2D(64, (3, 3), activation='relu'),
-        MaxPooling2D(2, 2),
-
-        Conv2D(32, (3, 3), activation='relu'),
-        MaxPooling2D(2, 2),
-
-        Flatten(),
-        Dropout(0.5),
-
-        Dense(64, activation='relu'),
-        Dense(2, activation='softmax')
-    ])
-
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-
-    model.summary()
-
-    history = model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test))
-
-    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
-    print(f"Test Accuracy: {test_acc}")
-
-    if test_acc > accuracy:
-        model.save('C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5')
-
-"""
-
-model = tf.keras.models.load_model("C:/Users/saman/OneDrive/Documents/GitHub/Somnolence/Detection_Model/drowsinessmodel.h5")
 pygame.init()
 pygame.mixer.init()
-sound_files = "Detection_Model/sounds/alarm.wav"
-pygame.mixer.music.load(sound_files)
+sound_file = "Detection_Model/sounds/alarm.mp3"
+pygame.mixer.music.load(sound_file)
 
-drowsy_time = 0
-
-have_not_woken_up = True
-left_pred = 0 # 0 for Closed, 1 for Open
-right_pred = 0
 cap = cv2.VideoCapture(0)
-eye_cascade_left = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_lefteye_2splits.xml")
-eye_cascade_right = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_righteye_2splits.xml")
+threshold = 3
+last_drowsy_detect = None
+ear_threshold = 0.2
 
-while cap.isOpened():
-    _, frame = cap.read()
+mp_face_mesh = mp.solutions.face_mesh
+mp_drawing = mp.solutions.drawing_utils
 
-    gray_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    left_eye = eye_cascade_left.detectMultiScale(gray_scale, 1.3, 5)
-    right_eye = eye_cascade_right.detectMultiScale(gray_scale, 1.3, 5)
+#define useful landmarks out of the 468 given my model
+left_landmarks = [33, 160, 158, 133, 153, 144]
+right_landmarks = [362, 387, 385, 263, 380, 373]
+def EAR(eye_landmarks):
+    p1 = eye_landmarks[0]
+    p2 = eye_landmarks[1]
+    p3 = eye_landmarks[2]
+    p4 = eye_landmarks[3]
+    p5 = eye_landmarks[4]
+    p6 = eye_landmarks[5]
 
-    for (x, y, w, h) in left_eye:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    height1 = math.hypot(p2[0] - p6[0], p2[1] - p6[1])
+    height2 = math.hypot(p3[0] - p5[0], p3[1] - p5[1])
+    horizontal = math.hypot(p1[0] - p4[0], p1[1] - p4[1])
+    ratio = (height1 + height2) / (2.0 * horizontal)
+    return ratio
 
-        roi = gray_scale[y:y + h, x:x + w]
+#define face_mesh
+with mp_face_mesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+) as face_mesh:
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-        roi = cv2.resize(roi, (145, 145))
-        roi_rgb = cv2.cvtColor(roi, cv2.COLOR_GRAY2RGB)
+        h, w, _ = frame.shape
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(rgb)
 
-        input_data = roi_rgb.astype('float32') / 255.0
-        input_data = np.expand_dims(input_data, axis=0)
+        prediction = "No Face"
 
-        prediction = model.predict(input_data)
+        if results.multi_face_landmarks:
+            face_landmarks = results.multi_face_landmarks[0]
 
-        pred_closed = prediction[0][0]
-        pred_open = prediction[0][1]
+            left_eye = [(int(face_landmarks.landmark[i].x * w), int(face_landmarks.landmark[i].y * h)) for i in left_landmarks]
+            right_eye = [(int(face_landmarks.landmark[i].x * w), int(face_landmarks.landmark[i].y * h)) for i in right_landmarks]
 
-        if pred_closed > pred_open:
-            left_pred = 0
+            #draws circles at landmarks
+            for (x, y) in left_eye + right_eye:
+                cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
+
+            left_ear = EAR(left_eye)
+            right_ear = EAR(right_eye)
+            ear = (left_ear + right_ear) / 2.0
+
+            frame = cv2.flip(frame, 1)
+
+            # determine if eyes are closed
+            if ear < ear_threshold:
+                prediction = "Closed"
+                if last_closed_time is None:
+                    last_closed_time = time.time()
+                elif time.time() - last_closed_time >= threshold:
+                    cv2.putText(frame, "DROWSY", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                    if not pygame.mixer.music.get_busy():
+                        pygame.mixer.music.play()
+            else:
+                prediction = "Open"
+                last_closed_time = None
+                cv2.putText(frame, "NOT DROWSY", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                pygame.mixer.music.stop()
+
         else:
-            left_pred = 1
+            last_closed_time = None
+            pygame.mixer.music.stop()
 
-    for (x, y, w, h) in right_eye:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.putText(frame, f"Prediction: {prediction}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
-        roi = gray_scale[y:y + h, x:x + w]
+        cv2.imshow("Drowsiness Detection", frame)
 
-        roi = cv2.resize(roi, (145, 145))
-        roi_rgb = cv2.cvtColor(roi, cv2.COLOR_GRAY2RGB)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-        input_data = roi_rgb.astype('float32') / 255.0
-        input_data = np.expand_dims(input_data, axis=0)
+    cap.release()
+    cv2.destroyAllWindows()
 
-        prediction = model.predict(input_data)
 
-        pred_closed = prediction[0][0]
-        pred_open = prediction[0][1]
-
-        if pred_closed > pred_open:
-            right_pred = 0
-        else:
-            right_pred = 1
-
-    if right_pred == 0 and left_pred == 0:
-        print("Closed")
-        drowsy_time += 1
-
-        if drowsy_time >= 90 and have_not_woken_up == False:
-            have_not_woken_up = True
-            pygame.mixer.music.play()
-            print("please wake up")
-    else:
-        drowsy_time = 0
-        have_not_woken_up = False
-        pygame.mixer.music.stop()
-        print("Open")
-
-    mirrored_frame = cv2.flip(frame, 1)
-    cv2.imshow("Drowsiness Detection", mirrored_frame)
-
-    if cv2.waitKey(1) == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
